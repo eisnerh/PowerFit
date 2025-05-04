@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Sugerencias de Reserva - PowerFit{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Sugerencias de Reserva</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="alert alert-info">
+                        <h5>Tu selección original:</h5>
+                        <p>Fecha: {{ fecha_solicitada }}<br>
+                        Hora: {{ hora_solicitada }}</p>
+                    </div>
+                    
+                    <h5 class="mb-3">Aquí tienes algunas alternativas disponibles:</h5>
+                    
+                    <div class="list-group">
+                        {% for sugerencia in sugerencias %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ sugerencia.dia }}</h6>
+                                    <p class="mb-1">Fecha: {{ sugerencia.fecha }}<br>
+                                    Hora: {{ sugerencia.hora }}</p>
+                                </div>
+                                <form action="{{ url_for('crear_reserva') }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="fecha" value="{{ sugerencia.fecha.split('/')[2] }}-{{ sugerencia.fecha.split('/')[1] }}-{{ sugerencia.fecha.split('/')[0] }}">
+                                    <input type="hidden" name="hora" value="{{ sugerencia.hora }}">
+                                    <button type="submit" class="btn btn-primary">Seleccionar</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Volver al Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

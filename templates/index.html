@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Bienvenido - PowerFit{% endblock %}
+
+{% block content %}
+<div class="container-fluid hero-section">
+    <div class="row justify-content-center align-items-center min-vh-80 py-5">
+        <div class="col-lg-8 text-center text-white">
+            <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Bienvenido al Gimnasio PowerFit</h1>
+            <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s">Tu camino hacia una vida más saludable comienza aquí</p>
+            
+            {% if current_user.is_authenticated %}
+                <div class="welcome-user animate__animated animate__fadeIn animate__delay-2s">
+                    <h3 class="mb-3">¡Hola, {{ current_user.nombre }}!</h3>
+                    <p class="mb-4">¿Listo para tu próximo entrenamiento?</p>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4 me-2">
+                        <i class="fas fa-tachometer-alt me-2"></i>Panel de Control
+                    </a>
+                    <a href="{{ url_for('booking') }}" class="btn btn-success btn-lg px-4">
+                        <i class="fas fa-calendar-plus me-2"></i>Nueva Reserva
+                    </a>
+                </div>
+            {% else %}
+                <div class="animate__animated animate__fadeIn animate__delay-2s">
+                    <p class="mb-4">Regístrate o inicia sesión para reservar tus entrenamientos</p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i>Registrarse
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Feature Cards -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-calendar-check fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Reserva Fácil</h3>
+                    <p class="text-muted">Selecciona el día y hora que mejor se adapte a tu rutina con nuestro sencillo sistema.</p>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('booking') }}" class="btn btn-outline-primary mt-2">Reservar Ahora</a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary mt-2">Comienza Ahora</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-dumbbell fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Entrenamiento Personalizado</h3>
+                    <p class="text-muted">Accede a programas diseñados por nuestros expertos según tus objetivos.</p>
+                    <a href="#features" class="btn btn-outline-primary mt-2">Conoce Más</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-chart-line fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Seguimiento de Progreso</h3>
+                    <p class="text-muted">Monitoriza tus avances y logros a través de tu panel personal.</p>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('progress') }}" class="btn btn-outline-primary mt-2">Ver Progreso</a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary mt-2">Empieza Hoy</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Sections -->
+<section class="bg-light py-5" id="features">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">Nuestras Instalaciones</h2>
+                <p class="lead">Equipo de última generación en un espacio diseñado para tu comodidad.</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i> Máquinas modernas</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i> Áreas especializadas</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i> Vestuarios equipados</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i> Ambiente climatizado</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                    url('https://via.placeholder.com/1920x1080') no-repeat center center;
+        background-size: cover;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .feature-icon {
+        transition: transform 0.3s;
+    }
+    
+    .card:hover .feature-icon {
+        transform: scale(1.1);
+    }
+    
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
+
+<!-- Include Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<!-- Include Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+{% endblock %}

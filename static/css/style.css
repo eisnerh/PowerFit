@@ -1,0 +1,26 @@
+  .navbar-custom {
+    background-color: #001f3f;
+  }
+  .navbar-logo-centered {
+    display: block; /* Para que ocupe todo el ancho disponible dentro del padre */
+    text-align: center; /* Centra el texto horizontalmente */
+  }
+  
+  .navbar-logo-centered a.navbar-brand {
+    display: inline-block; /* Permite aplicar márgenes y anchos */
+    width: 100%; /* Extiende el ancho del enlace */
+  }
+  
+  /* Opcional: Si quieres ajustar el espaciado vertical */
+  .navbar-brand {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    margin-right: 0; /* Elimina el margen derecho predeterminado */
+  }
+
+  .navbar-logo {
+    width: 60px; /* Ajusta el ancho deseado */
+    height: auto; /* Mantiene la proporción original */
+    margin-right: 0.5rem; /* Espacio a la derecha (opcional) */
+    vertical-align: middle; /* Alinea verticalmente con el texto */
+  }

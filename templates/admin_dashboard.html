@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Administración - PowerFit{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Panel de Administración</h1>
+
+    <!-- Sección de Perfil -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Perfil de Administrador</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('actualizar_perfil_admin') }}" method="POST">
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ current_user.nombre }}" required>
+                    <small class="text-muted">Este nombre aparecerá en los correos enviados a los usuarios</small>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                    <small class="text-muted">Este correo se usará para recibir notificaciones de reservas</small>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Nueva Contraseña</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                    <small class="text-muted">Dejar en blanco para mantener la contraseña actual</small>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                </div>
+                <button type="submit" class="btn btn-primary">Actualizar Perfil</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sección de Usuarios -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Usuarios Registrados</h5>
+        </div>
+        <div class="card-body">
+            {% if usuarios %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Reservas Activas</th>
+                            <th>Última Reserva</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.nombre }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>
+                                {% set reservas_activas = usuario.reservas|selectattr('estado', 'equalto', 'confirmada')|list|length %}
+                                {{ reservas_activas }}
+                            </td>
+                            <td>
+                                {% set ultima_reserva = usuario.reservas|sort(attribute='fecha_creacion')|last %}
+                                {% if ultima_reserva %}
+                                    {{ ultima_reserva.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                                {% else %}
+                                    Sin reservas
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalUsuario{{ usuario.id }}">
+                                    Ver Detalles
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modales para detalles de usuario -->
+            {% for usuario in usuarios %}
+            <div class="modal fade" id="modalUsuario{{ usuario.id }}" tabindex="-1" aria-labelledby="modalUsuarioLabel{{ usuario.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalUsuarioLabel{{ usuario.id }}">Detalles del Usuario: {{ usuario.nombre }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h6>Información Personal</h6>
+                            <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
+                            <p><strong>Email:</strong> {{ usuario.email }}</p>
+                            
+                            <h6 class="mt-4">Historial de Reservas</h6>
+                            {% set reservas_usuario = usuario.reservas|sort(attribute='fecha_creacion', reverse=true) %}
+                            {% if reservas_usuario %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Hora</th>
+                                            <th>Estado</th>
+                                            <th>Fecha de Creación</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for reserva in reservas_usuario %}
+                                        <tr>
+                                            <td>{{ reserva.fecha.strftime('%d/%m/%Y') }}</td>
+                                            <td>{{ reserva.hora.strftime('%H:%M') }}</td>
+                                            <td>
+                                                <span class="badge {% if reserva.estado == 'confirmada' %}bg-success
+                                                              {% elif reserva.estado == 'cancelada' %}bg-danger
+                                                              {% elif reserva.estado == 'completada' %}bg-info
+                                                              {% else %}bg-warning{% endif %}">
+                                                    {{ reserva.estado }}
+                                                </span>
+                                            </td>
+                                            <td>{{ reserva.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">El usuario no tiene reservas registradas.</p>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted">No hay usuarios registrados.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sección de Configuración -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Configuración PowerFit</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('actualizar_configuracion') }}" method="post">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="hora_apertura" class="form-label">Hora de Apertura</label>
+                            <input type="time" class="form-control" id="hora_apertura" name="hora_apertura" 
+                                   value="{{ config.hora_apertura.strftime('%H:%M') }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="hora_cierre" class="form-label">Hora de Cierre</label>
+                            <input type="time" class="form-control" id="hora_cierre" name="hora_cierre" 
+                                   value="{{ config.hora_cierre.strftime('%H:%M') }}" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Días Activos</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="dias" value="1" id="lunes" 
+                               {% if '1' in config.dias_activos.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="lunes">Lunes</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="dias" value="2" id="martes" 
+                               {% if '2' in config.dias_activos.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="martes">Martes</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="dias" value="3" id="miercoles" 
+                               {% if '3' in config.dias_activos.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="miercoles">Miércoles</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="dias" value="4" id="jueves" 
+                               {% if '4' in config.dias_activos.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="jueves">Jueves</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="dias" value="5" id="viernes" 
+                               {% if '5' in config.dias_activos.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="viernes">Viernes</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="dias" value="6" id="sabado" 
+                               {% if '6' in config.dias_activos.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="sabado">Sábado</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="dias" value="7" id="domingo" 
+                               {% if '7' in config.dias_activos.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="domingo">Domingo</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="capacidad_maxima" class="form-label">Capacidad Máxima por Hora</label>
+                    <input type="number" class="form-control" id="capacidad_maxima" name="capacidad_maxima" 
+                           value="{{ config.capacidad_maxima }}" min="1" required>
+                    <div class="form-text">Número máximo de personas permitidas por hora en el gimnasio.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Actualizar Configuración</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sección de Reservas Pendientes -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Reservas Pendientes</h5>
+        </div>
+        <div class="card-body">
+            {% if reservas_pendientes %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas_pendientes %}
+                        <tr>
+                            <td>{{ reserva.usuario.nombre }}</td>
+                            <td>{{ reserva.usuario.email }}</td>
+                            <td>{{ reserva.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ reserva.hora.strftime('%H:%M') }}</td>
+                            <td>
+                                <form action="{{ url_for('actualizar_reserva', id=reserva.id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="accion" value="aprobar">
+                                    <button type="submit" class="btn btn-success btn-sm">Aprobar</button>
+                                </form>
+                                <form action="{{ url_for('actualizar_reserva', id=reserva.id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="accion" value="rechazar">
+                                    <button type="submit" class="btn btn-danger btn-sm">Rechazar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No hay reservas pendientes</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sección de Historial -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Historial de Reservas</h5>
+        </div>
+        <div class="card-body">
+            <a href="{{ url_for('descargar_historial') }}" class="btn btn-primary mb-3">
+                <i class="fas fa-download"></i> Descargar Historial
+            </a>
+            {% if historial_reservas %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Fecha de Creación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in historial_reservas %}
+                        <tr>
+                            <td>{{ reserva.usuario.nombre }}</td>
+                            <td>{{ reserva.usuario.email }}</td>
+                            <td>{{ reserva.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ reserva.hora.strftime('%H:%M') }}</td>
+                            <td>
+                                <span class="badge {% if reserva.estado == 'confirmada' %}bg-success
+                                                  {% elif reserva.estado == 'cancelada' %}bg-danger
+                                                  {% elif reserva.estado == 'completada' %}bg-info
+                                                  {% else %}bg-warning{% endif %}">
+                                    {{ reserva.estado }}
+                                </span>
+                            </td>
+                            <td>{{ reserva.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No hay historial de reservas</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

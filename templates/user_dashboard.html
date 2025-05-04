@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Usuario - PowerFit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2>Panel de Usuario</h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Nueva Reserva -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Nueva Reserva</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('crear_reserva') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" class="form-control" name="fecha" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora</label>
+                        <select class="form-control" name="hora" required>
+                            {% for hora in horas_disponibles %}
+                            <option value="{{ hora }}">{{ hora }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Solicitar Reserva</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservas de la Semana -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Reservas de la Semana</h4>
+                <small class="text-muted">
+                    {{ inicio_semana.strftime('%d/%m/%Y') }} - {{ fin_semana.strftime('%d/%m/%Y') }}
+                </small>
+            </div>
+            <div class="card-body">
+                {% if reservas_semana %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Día</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in reservas_semana|sort(attribute='fecha') %}
+                            <tr>
+                                <td>{{ reserva.fecha.strftime('%A')|title }}</td>
+                                <td>{{ reserva.fecha.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ reserva.hora.strftime('%H:%M') }}</td>
+                                <td>
+                                    <span class="badge {% if reserva.estado == 'confirmada' %}bg-success
+                                                  {% elif reserva.estado == 'cancelada' %}bg-danger
+                                                  {% elif reserva.estado == 'completada' %}bg-info
+                                                  {% else %}bg-warning{% endif %}">
+                                        {{ reserva.estado }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if reserva.estado == 'pendiente' %}
+                                    <form method="POST" action="{{ url_for('cancelar_reserva', id=reserva.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No tienes reservas para esta semana.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Todas las Reservas -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Historial de Reservas</h4>
+            </div>
+            <div class="card-body">
+                {% if mis_reservas %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in mis_reservas %}
+                            <tr>
+                                <td>{{ reserva.fecha.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ reserva.hora.strftime('%H:%M') }}</td>
+                                <td>
+                                    <span class="badge {% if reserva.estado == 'confirmada' %}bg-success
+                                                  {% elif reserva.estado == 'cancelada' %}bg-danger
+                                                  {% elif reserva.estado == 'completada' %}bg-info
+                                                  {% else %}bg-warning{% endif %}">
+                                        {{ reserva.estado }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if reserva.estado == 'pendiente' %}
+                                    <form method="POST" action="{{ url_for('cancelar_reserva', id=reserva.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No tienes reservas registradas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Horario del Gimnasio -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Horario del Gimnasio</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Horario de Apertura:</strong> {{ config.hora_apertura.strftime('%H:%M') }}</p>
+                <p><strong>Horario de Cierre:</strong> {{ config.hora_cierre.strftime('%H:%M') }}</p>
+                <p><strong>Días Activos:</strong></p>
+                <ul>
+                    {% for dia in dias_activos %}
+                    <li>{{ dia }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
